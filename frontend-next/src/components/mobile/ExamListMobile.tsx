@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { ChevronRight } from 'lucide-react';
 import type { ExamsByYear } from '@/services/api';
 import './ExamListMobile.css';
 
@@ -53,8 +54,8 @@ export default function ExamListMobile({ initialData }: ExamListMobileProps) {
                                 )}
                             >
                                 <span className="mobile-year-badge">{yearGroup.year}年</span>
-                                <span className="mobile-expand-icon">
-                                    {expandedYear === yearGroup.year ? '▼' : '▶'}
+                                <span className={`mobile-expand-icon ${expandedYear === yearGroup.year ? 'is-expanded' : ''}`}>
+                                    <ChevronRight size={18} />
                                 </span>
                             </div>
 
