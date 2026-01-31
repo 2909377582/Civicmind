@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import type { ExamsByYear } from '@/services/api';
 import './ExamListDesktop.css';
 
@@ -10,7 +10,6 @@ interface ExamListDesktopProps {
 }
 
 export default function ExamListDesktop({ initialData }: ExamListDesktopProps) {
-    const router = useRouter();
     console.log('ExamListDesktop initialData:', initialData); // Debug log
     const [examsByYear] = useState<ExamsByYear[]>(initialData);
     const [expandedYear, setExpandedYear] = useState<number | null>(
@@ -75,10 +74,10 @@ export default function ExamListDesktop({ initialData }: ExamListDesktopProps) {
                             {expandedYear === yearGroup.year && (
                                 <div className="exams-grid">
                                     {yearGroup.exams.map((exam) => (
-                                        <div
+                                        <Link
                                             key={exam.id}
+                                            href={`/exam/${exam.id}`}
                                             className="exam-card"
-                                            onClick={() => router.push(`/exam/${exam.id}`)}
                                         >
                                             <div className="exam-card-header">
                                                 <span className="exam-icon">
@@ -109,7 +108,7 @@ export default function ExamListDesktop({ initialData }: ExamListDesktopProps) {
                                             <button className="start-btn">
                                                 开始做题 <span>→</span>
                                             </button>
-                                        </div>
+                                        </Link>
                                     ))}
                                 </div>
                             )}

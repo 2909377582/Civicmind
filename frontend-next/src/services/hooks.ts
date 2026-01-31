@@ -2,65 +2,45 @@
  * React Hooks for API calls
  */
 import { useState, useEffect, useCallback } from 'react'
-import { questionApi, gradingApi, materialApi } from './api'
-import type { Question, UserAnswer, Material, GradingHistoryItem } from './api'
+import useSWR, { mutate } from 'swr'
+import { questionApi, gradingApi, materialApi, examApi } from './api'
+import type { Question, UserAnswer, Material, GradingHistoryItem, ExamsByYear } from './api'
 
 // 题目列表 Hook
+// 题目列表 Hook (SWR 版)
 export function useQuestions(filters?: {
     year?: number
     exam_type?: string
     question_type?: string
 }) {
-    const [questions, setQuestions] = useState<Question[]>([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
+    const key = ['questions', filters?.year, filters?.exam_type, filters?.question_type];
 
-    const fetchQuestions = useCallback(async () => {
-        try {
-            setLoading(true)
-            setError(null)
-            const data = await questionApi.list(filters)
-            setQuestions(data)
-        } catch (err) {
-            setError(err instanceof Error ? err.message : '获取题目失败')
-            setQuestions([])
-        } finally {
-            setLoading(false)
-        }
-    }, [filters?.year, filters?.exam_type, filters?.question_type])
+    const { data: questions = [], error, isLoading, mutate: refetch } = useSWR(
+        key,
+        () => questionApi.list(filters)
+    );
 
-    useEffect(() => {
-        fetchQuestions()
-    }, [fetchQuestions])
-
-    return { questions, loading, error, refetch: fetchQuestions }
+    return {
+        questions,
+        loading: isLoading,
+        error: error ? (error instanceof Error ? error.message : '获取题目失败') : null,
+        refetch
+    }
 }
 
 // 单个题目 Hook
+// 单个题目 Hook (SWR 版)
 export function useQuestion(id: string) {
-    const [question, setQuestion] = useState<Question | null>(null)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
+    const { data: question = null, error, isLoading } = useSWR(
+        id ? `/questions/${id}` : null,
+        () => questionApi.get(id)
+    );
 
-    useEffect(() => {
-        if (!id) return
-
-        const fetchQuestion = async () => {
-            try {
-                setLoading(true)
-                const data = await questionApi.get(id)
-                setQuestion(data)
-            } catch (err) {
-                setError(err instanceof Error ? err.message : '获取题目失败')
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        fetchQuestion()
-    }, [id])
-
-    return { question, loading, error }
+    return {
+        question,
+        loading: isLoading,
+        error: error ? (error instanceof Error ? error.message : '获取题目失败') : null
+    }
 }
 
 // 批改提交 Hook
@@ -232,73 +212,56 @@ export function useGrading() {
 }
 
 // 素材列表 Hook
+// 素材列表 Hook (SWR 版)
 export function useMaterials(params?: {
     category?: string
     query?: string
     is_favorite?: boolean
 }) {
-    const [materials, setMaterials] = useState<Material[]>([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
+    const key = ['materials', params?.category, params?.query, params?.is_favorite];
 
-    const fetchMaterials = useCallback(async () => {
-        try {
-            setLoading(true)
-            setError(null)
-            const data = await materialApi.list(params)
-            setMaterials(data)
-        } catch (err) {
-            setError(err instanceof Error ? err.message : '获取素材失败')
-            setMaterials([])
-        } finally {
-            setLoading(false)
-        }
-    }, [params?.category, params?.query, params?.is_favorite])
-
-    useEffect(() => {
-        fetchMaterials()
-    }, [fetchMaterials])
+    const { data: materials = [], error, isLoading, mutate: refetch } = useSWR(
+        key,
+        () => materialApi.list(params)
+    );
 
     const toggleFavorite = async (id: string, isFavorite: boolean) => {
         try {
-            // Optimistic update
-            setMaterials(prev => prev.map(m =>
+            // Optimistic update using mutate
+            const updatedMaterials = materials.map(m =>
                 m.id === id ? { ...m, is_favorite: !isFavorite } : m
-            ))
-            await materialApi.toggleFavorite(id, !isFavorite)
+            );
+
+            mutate(key, updatedMaterials, false); // Update snapshot immediately
+            await materialApi.toggleFavorite(id, !isFavorite);
+            mutate(key); // Revalidate with real data
         } catch (err) {
-            console.error('Toggle favorite failed:', err)
-            // Revert on error
-            setMaterials(prev => prev.map(m =>
-                m.id === id ? { ...m, is_favorite: isFavorite } : m
-            ))
-            throw err
+            console.error('Toggle favorite failed:', err);
+            mutate(key); // Revert on error
+            throw err;
         }
     }
 
-    return { materials, loading, error, refetch: fetchMaterials, toggleFavorite }
+    return {
+        materials,
+        loading: isLoading,
+        error: error ? (error instanceof Error ? error.message : '获取素材失败') : null,
+        refetch,
+        toggleFavorite
+    }
 }
 
 // 素材统计 Hook
+// 素材统计 Hook (SWR 版)
 export function useMaterialStats() {
-    const [stats, setStats] = useState<Record<string, number>>({})
-    const [loading, setLoading] = useState(true)
+    const { data: stats = {}, error, isLoading, mutate: refetch } = useSWR(
+        '/materials/stats',
+        () => materialApi.stats()
+    );
 
-    const fetchStats = async () => {
-        try {
-            setLoading(true)
-            const data = await materialApi.stats()
-            setStats(data)
-        } catch (err) {
-            console.error('获取素材统计失败:', err)
-        } finally {
-            setLoading(false)
-        }
+    return {
+        stats,
+        loading: isLoading,
+        refetch
     }
-
-    useEffect(() => {
-        fetchStats()
-    }, [])
-
-    return { stats, loading, refetch: fetchStats }
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import type { ExamsByYear } from '@/services/api';
 import './ExamListMobile.css';
 
@@ -10,7 +10,6 @@ interface ExamListMobileProps {
 }
 
 export default function ExamListMobile({ initialData }: ExamListMobileProps) {
-    const router = useRouter();
     const [examsByYear] = useState<ExamsByYear[]>(initialData);
     const [expandedYear, setExpandedYear] = useState<number | null>(
         initialData.length > 0 ? initialData[0].year : null
@@ -62,10 +61,10 @@ export default function ExamListMobile({ initialData }: ExamListMobileProps) {
                             {expandedYear === yearGroup.year && (
                                 <div className="mobile-exams-list">
                                     {yearGroup.exams.map((exam) => (
-                                        <div
+                                        <Link
                                             key={exam.id}
+                                            href={`/exam/${exam.id}`}
                                             className="mobile-exam-card"
-                                            onClick={() => router.push(`/exam/${exam.id}`)}
                                         >
                                             <div className="mobile-card-top">
                                                 <div className="mobile-exam-icon">{getExamTypeIcon(exam.exam_type)}</div>
@@ -89,7 +88,7 @@ export default function ExamListMobile({ initialData }: ExamListMobileProps) {
                                                 <span>总分 {exam.total_score}</span>
                                                 <button className="mobile-start-btn">开始</button>
                                             </div>
-                                        </div>
+                                        </Link>
                                     ))}
                                 </div>
                             )}
