@@ -65,7 +65,7 @@ export default function ExamListMobile({ onSelectExam }: ExamListMobileProps) {
             <div className="mobile-error-state">
                 <span>⚠️</span>
                 <p>{error}</p>
-                <button className="mobile-retry-btn" onClick={() => window.location.reload()}>重试</button>
+                <button className="mobile-retry-btn" onClick={() => { setError(null); setLoading(true); examApi.list().then(data => { setExamsByYear(data); setLoading(false); }).catch(err => { setError(err.message); setLoading(false); }); }}>重试</button>
             </div>
         );
     }

@@ -14,31 +14,62 @@ async function request<T>(
 
     // 如果 body 是 FormData，不要设置 Content-Type，让浏览器自动处理
     const isFormData = options.body instanceof FormData;
-    // 支持超时设置
-    let signal = options.signal;
-    if (!signal && options.timeout) {
-        const controller = new AbortController();
-        setTimeout(() => controller.abort(), options.timeout);
-        signal = controller.signal;
+    const { retries = 2, retryDelay = 1000, ...fetchOptions } = options as any;
+
+    let lastError;
+    for (let i = 0; i < retries + 1; i++) {
+        try {
+            // 支持超时设置
+            let signal = fetchOptions.signal;
+            let controller: AbortController | null = null;
+
+            if (!signal && fetchOptions.timeout) {
+                controller = new AbortController();
+                // 确保 timeout 是数字
+                const timeoutMs = Number(fetchOptions.timeout);
+                if (!isNaN(timeoutMs)) {
+                    setTimeout(() => controller?.abort(), timeoutMs);
+                    // 请求完成后清除 timeout
+                    // 注意：这里无法直接清除，只能依赖 fetch完成或失败
+                }
+                signal = controller.signal;
+            }
+
+            const config: RequestInit = {
+                ...fetchOptions,
+                signal,
+                headers: {
+                    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+                    ...(fetchOptions.headers || {}),
+                },
+            };
+
+            const response = await fetch(url, config);
+
+            if (!response.ok) {
+                // 如果是 4xx 错误（除 429 外），通常不需要重试（客户端错误）
+                if (response.status >= 400 && response.status < 500 && response.status !== 429) {
+                    const error = await response.json().catch(() => ({}));
+                    throw new Error(error.detail || `请求失败: ${response.status}`);
+                }
+                // 5xx 或 429 错误，抛出以触发重试
+                throw new Error(`请求失败: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (err) {
+            lastError = err;
+            const isAbort = err instanceof DOMException && err.name === 'AbortError';
+            // 如果是中止错误（超时），或者已经重试完了，就退出
+            if (isAbort || i === retries) break;
+
+            // 等待后重试
+            await new Promise(resolve => setTimeout(resolve, retryDelay * (i + 1))); // 指数退避略微增加
+            console.warn(`API Request failed, retrying (${i + 1}/${retries})...`, err);
+        }
     }
 
-    const config: RequestInit = {
-        ...options,
-        signal,
-        headers: {
-            ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
-            ...(options.headers || {}),
-        },
-    }
-
-    const response = await fetch(url, config)
-
-    if (!response.ok) {
-        const error = await response.json().catch(() => ({}))
-        throw new Error(error.detail || `请求失败: ${response.status}`)
-    }
-
-    return response.json()
+    throw lastError;
 }
 
 // 题目相关 API

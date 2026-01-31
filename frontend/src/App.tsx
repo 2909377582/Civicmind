@@ -3,6 +3,7 @@ import Header from './components/Header'
 import Sidebar from './components/Sidebar'
 import MobileLayout from './components/mobile/MobileLayout'
 import ExamListMobile from './pages/mobile/ExamListMobile'
+import ExamDetailMobile from './pages/mobile/ExamDetailMobile'
 import MaterialsMobile from './pages/mobile/MaterialsMobile'
 import HistoryMobile from './pages/mobile/HistoryMobile'
 import { useIsMobile } from './hooks/useIsMobile'
@@ -122,11 +123,19 @@ function App() {
         )
       case 'exam-detail':
         return selectedExamId ? (
-          <ExamDetailPage
-            examId={selectedExamId}
-            onSelectQuestion={handleSelectQuestion}
-            onBack={handleBackToExams}
-          />
+          isMobile ? (
+            <ExamDetailMobile
+              examId={selectedExamId}
+              onSelectQuestion={handleSelectQuestion}
+              onBack={handleBackToExams}
+            />
+          ) : (
+            <ExamDetailPage
+              examId={selectedExamId}
+              onSelectQuestion={handleSelectQuestion}
+              onBack={handleBackToExams}
+            />
+          )
         ) : null
 
       case 'answer':
