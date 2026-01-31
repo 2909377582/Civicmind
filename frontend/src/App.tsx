@@ -3,6 +3,8 @@ import Header from './components/Header'
 import Sidebar from './components/Sidebar'
 import MobileLayout from './components/mobile/MobileLayout'
 import ExamListMobile from './pages/mobile/ExamListMobile'
+import MaterialsMobile from './pages/mobile/MaterialsMobile'
+import HistoryMobile from './pages/mobile/HistoryMobile'
 import { useIsMobile } from './hooks/useIsMobile'
 import ExamListPage from './pages/ExamListPage'
 import ExamDetailPage from './pages/ExamDetailPage'
@@ -145,9 +147,11 @@ function App() {
           />
         ) : null
       case 'materials':
-        return <MaterialsPage />
+        return isMobile ? <MaterialsMobile /> : <MaterialsPage />
       case 'history':
-        return (
+        return isMobile ? (
+          <HistoryMobile onViewReport={handleViewReport} />
+        ) : (
           <HistoryPage
             onViewReport={handleViewReport}
             onBack={handleBackFromHistory}
