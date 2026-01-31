@@ -4,6 +4,15 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+console.log('[Config] Environment Check:', {
+    NODE_ENV: process.env.NODE_ENV,
+    HAS_SUPABASE_URL: !!process.env.SUPABASE_URL,
+    HAS_SUPABASE_KEY: !!process.env.SUPABASE_KEY,
+    HAS_SUPABASE_ANON_KEY: !!process.env.SUPABASE_ANON_KEY,
+    HAS_AI_KEY: !!process.env.AI_API_KEY,
+    HAS_DEEPSEEK_KEY: !!process.env.DEEPSEEK_API_KEY
+});
+
 export const config = {
     app: {
         name: process.env.APP_NAME || 'CivicMind',
