@@ -1,5 +1,6 @@
 import { questionApi, examApi } from "@/services/api";
 import AnswerPage from "@/components/AnswerPage";
+import { isMobileDevice } from "@/utils/device";
 
 export const dynamic = 'force-dynamic';
 
@@ -34,9 +35,15 @@ export default async function AnswerServerPage({ params }: { params: Promise<{ i
         );
     }
 
+    const isMobile = await isMobileDevice();
+
     return (
         <main className="min-h-screen bg-gray-50">
-            <AnswerPage initialQuestion={initialQuestion} initialExam={initialExam} />
+            <AnswerPage
+                initialQuestion={initialQuestion}
+                initialExam={initialExam}
+                isMobile={isMobile}
+            />
         </main>
     );
 }

@@ -8,13 +8,16 @@ import type { UploadProgress } from '@/utils/imageUpload'
 import type { Question, Exam, UserAnswer, GradingResult } from '@/services/api'
 import './AnswerPage.css'
 import GradingLoadingOverlay from './GradingLoadingOverlay'
+import AnswerMobile from './mobile/AnswerMobile'
+import { isMobileDevice } from '@/utils/device'
 
 interface AnswerPageProps {
     initialQuestion: Question
     initialExam?: Exam | null
+    isMobile?: boolean
 }
 
-export default function AnswerPage({ initialQuestion, initialExam }: AnswerPageProps) {
+export default function AnswerPage({ initialQuestion, initialExam, isMobile }: AnswerPageProps) {
     const router = useRouter()
     const { submitAnswerAsync, pollGradingStatus, asyncStatus, loading: isSubmitting, resetAsyncStatus } = useGrading()
 
@@ -183,6 +186,77 @@ export default function AnswerPage({ initialQuestion, initialExam }: AnswerPageP
         // Allow user to stay on page or go back?
         // Original behavior: onBack()
         handleBack()
+    }
+
+    if (isMobile) {
+        return (
+            <>
+                <AnswerMobile
+                    question={question}
+                    exam={exam}
+                    content={content}
+                    setContent={setContent}
+                    timeSpent={timeSpent}
+                    formatTime={formatTime}
+                    isPaused={isPaused}
+                    setIsPaused={setIsPaused}
+                    answerMode={answerMode}
+                    setAnswerMode={setAnswerMode}
+                    handleBack={handleBack}
+                    handleSubmit={handleSubmit}
+                    isSubmitting={isSubmitting}
+                    handleRemoveImage={handleRemoveImage}
+                    imagePreview={imagePreview}
+                    handleImageUpload={handleImageUpload}
+                    fileInputRef={fileInputRef as any}
+                />
+                <GradingLoadingOverlay
+                    isVisible={showSubmitModal}
+                    status={{
+                        status: asyncStatus.status,
+                        progress: asyncStatus.progress,
+                        message: asyncStatus.message,
+                        error: submitError || asyncStatus.error
+                    }}
+                    onClose={handleCloseModal}
+                    onViewResult={() => {
+                        if (asyncStatus.answerId) {
+                            router.push(`/report/${asyncStatus.answerId}`)
+                        }
+                    }}
+                />
+
+                {showOcrReviewModal && (
+                    <div className="modal-overlay">
+                        <div className="modal ocr-review-modal">
+                            <div className="modal-header">
+                                <h3>📝 识别结果审核</h3>
+                                <button className="close-btn" onClick={handleOcrCancel}>✕</button>
+                            </div>
+                            <div className="modal-body">
+                                <p className="ocr-review-hint">
+                                    请检查以下识别内容，您可以直接编辑修正错误后提交：
+                                </p>
+                                <div className="ocr-review-content mobile-ocr">
+                                    <div className="ocr-text-edit">
+                                        <textarea
+                                            value={editableOcrText}
+                                            onChange={(e) => setEditableOcrText(e.target.value)}
+                                            placeholder="识别的文字内容..."
+                                            rows={12}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button className="btn-secondary" onClick={handleOcrCancel}>取消</button>
+                                <button className="btn-primary" onClick={handleOcrConfirm}>✅ 确认使用</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </>
+        )
     }
 
     return (

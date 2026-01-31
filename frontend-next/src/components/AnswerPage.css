@@ -655,3 +655,31 @@
 .btn-secondary:hover {
     background: #e2e8f0;
 }
+
+/* Mobile OCR Overlay Fixes */
+@media (max-width: 768px) {
+    .ocr-review-modal {
+        width: 95% !important;
+        max-height: 90vh !important;
+    }
+
+    .ocr-review-content {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1rem !important;
+    }
+
+    .ocr-image-preview img {
+        max-height: 200px !important;
+    }
+
+    .ocr-text-edit textarea {
+        min-height: 200px !important;
+        font-size: 14px !important;
+    }
+
+    .mobile-ocr .ocr-image-preview {
+        display: none;
+        /* Hide image on mobile OCR to save space if needed, or keep smaller */
+    }
+}
