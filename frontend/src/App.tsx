@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar'
 import MobileLayout from './components/mobile/MobileLayout'
 import ExamListMobile from './pages/mobile/ExamListMobile'
 import ExamDetailMobile from './pages/mobile/ExamDetailMobile'
+import ReportPageMobile from './pages/mobile/ReportPageMobile'
 import MaterialsMobile from './pages/mobile/MaterialsMobile'
 import HistoryMobile from './pages/mobile/HistoryMobile'
 import { useIsMobile } from './hooks/useIsMobile'
@@ -149,11 +150,19 @@ function App() {
         ) : null
       case 'report':
         return gradingResult ? (
-          <ReportPage
-            result={gradingResult}
-            question={selectedQuestion}
-            onBack={handleBackToQuestions}
-          />
+          isMobile ? (
+            <ReportPageMobile
+              result={gradingResult}
+              question={selectedQuestion}
+              onBack={handleBackToQuestions}
+            />
+          ) : (
+            <ReportPage
+              result={gradingResult}
+              question={selectedQuestion}
+              onBack={handleBackToQuestions}
+            />
+          )
         ) : null
       case 'materials':
         return isMobile ? <MaterialsMobile /> : <MaterialsPage />
