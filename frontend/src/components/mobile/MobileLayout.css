@@ -1,0 +1,40 @@
+.mobile-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: #f5f7fa;
+    overflow: hidden;
+    /* Prevent body scroll, content scrolls internally */
+}
+
+.mobile-header {
+    height: 48px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid #eee;
+    flex-shrink: 0;
+    padding: 0 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.mobile-content {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Smooth scroll on iOS */
+    padding: 12px;
+    padding-bottom: 80px;
+    /* Space for bottom nav */
+}
+
+/* Adjustments for existing pages when inside mobile layout */
+.mobile-content .exam-list-page {
+    padding: 0;
+}
+
+.mobile-content .exam-card {
+    margin-bottom: 12px;
+}

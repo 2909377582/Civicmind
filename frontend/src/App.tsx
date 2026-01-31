@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import Header from './components/Header'
 import Sidebar from './components/Sidebar'
+import MobileLayout from './components/mobile/MobileLayout'
+import { useIsMobile } from './hooks/useIsMobile'
 import ExamListPage from './pages/ExamListPage'
 import ExamDetailPage from './pages/ExamDetailPage'
 import AnswerPage from './pages/AnswerPage'
@@ -16,6 +18,7 @@ import './App.css'
 type Page = 'exams' | 'exam-detail' | 'questions' | 'answer' | 'report' | 'materials' | 'admin' | 'history'
 
 function App() {
+  const isMobile = useIsMobile()
   const [currentPage, setCurrentPage] = useState<Page>('exams')
   const [selectedExamId, setSelectedExamId] = useState<string | null>(null)
   const [selectedExam, setSelectedExam] = useState<Exam | null>(null)
@@ -157,28 +160,42 @@ function App() {
 
   return (
     <UserProvider>
-      <div className="app">
-        <Header />
-        <div className="app-layout">
-          <Sidebar
-            currentPage={currentPage}
-            onNavigate={(page) => {
-              setCurrentPage(page as any)
-              if (page === 'exams') {
-                handleBackToExams()
-              } else if (page === 'questions') {
-                setSelectedQuestion(null)
-                setGradingResult(null)
-              }
-            }}
-            onViewReport={handleViewReport}
-            onManageHistory={handleManageHistory}
-          />
-          <main className="main-content">
-            {renderPage()}
-          </main>
+      {isMobile ? (
+        <MobileLayout
+          currentPage={currentPage}
+          onNavigate={(page: string) => {
+            setCurrentPage(page as any)
+            if (page === 'exams') {
+              handleBackToExams()
+            }
+          }}
+        >
+          {renderPage()}
+        </MobileLayout>
+      ) : (
+        <div className="app">
+          <Header />
+          <div className="app-layout">
+            <Sidebar
+              currentPage={currentPage}
+              onNavigate={(page) => {
+                setCurrentPage(page as any)
+                if (page === 'exams') {
+                  handleBackToExams()
+                } else if (page === 'questions') {
+                  setSelectedQuestion(null)
+                  setGradingResult(null)
+                }
+              }}
+              onViewReport={handleViewReport}
+              onManageHistory={handleManageHistory}
+            />
+            <main className="main-content">
+              {renderPage()}
+            </main>
+          </div>
         </div>
-      </div>
+      )}
     </UserProvider>
   )
 }
