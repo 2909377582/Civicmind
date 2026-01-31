@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import useSWR from 'swr';
 import { ChevronRight } from 'lucide-react';
+import { examApi } from '@/services/api';
 import type { ExamsByYear } from '@/services/api';
 import './ExamListMobile.css';
 
@@ -11,10 +13,18 @@ interface ExamListMobileProps {
 }
 
 export default function ExamListMobile({ initialData }: ExamListMobileProps) {
-    const [examsByYear] = useState<ExamsByYear[]>(initialData);
-    const [expandedYear, setExpandedYear] = useState<number | null>(
-        initialData.length > 0 ? initialData[0].year : null
-    );
+    const { data: examsByYear = initialData } = useSWR('exams/list', () => examApi.list(), {
+        fallbackData: initialData,
+    });
+
+    const [expandedYear, setExpandedYear] = useState<number | null>(null);
+
+    // Initialize expanded year once data is available
+    useEffect(() => {
+        if (!expandedYear && examsByYear && examsByYear.length > 0) {
+            setExpandedYear(examsByYear[0].year);
+        }
+    }, [examsByYear, expandedYear]);
 
     const getExamTypeIcon = (type: string) => {
         switch (type) {

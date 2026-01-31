@@ -4,14 +4,16 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { preload } from 'swr';
-import { materialApi, gradingApi } from '../../services/api';
+import { materialApi, gradingApi, examApi } from '../../services/api';
 import './MobileNavbar.css';
 
 export default function MobileNavbar() {
     const pathname = usePathname();
 
-    // Pre-warm the cache for Materials and History
+    // Pre-warm the cache for Exams, Materials and History
     React.useEffect(() => {
+        // Preload exams
+        preload('exams/list', () => examApi.list());
         // Preload materials (default category)
         preload(['materials', undefined, undefined, undefined], () => materialApi.list());
         // Preload history
