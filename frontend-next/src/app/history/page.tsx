@@ -15,7 +15,7 @@ export default async function HistoryPage() {
     const isMobile = await isMobileDevice();
 
     // Fetch history on the server
-    const initialHistory = await gradingApi.history().catch(() => []);
+    const initialHistory = await gradingApi.myHistory().catch(() => []);
 
     return isMobile ?
         <HistoryMobile initialData={initialHistory} /> :
