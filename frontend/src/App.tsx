@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Header from './components/Header'
 import Sidebar from './components/Sidebar'
 import MobileLayout from './components/mobile/MobileLayout'
+import ExamListMobile from './pages/mobile/ExamListMobile'
 import { useIsMobile } from './hooks/useIsMobile'
 import ExamListPage from './pages/ExamListPage'
 import ExamDetailPage from './pages/ExamDetailPage'
@@ -112,7 +113,11 @@ function App() {
   const renderPage = () => {
     switch (currentPage) {
       case 'exams':
-        return <ExamListPage onSelectExam={handleSelectExam} />
+        return isMobile ? (
+          <ExamListMobile onSelectExam={handleSelectExam} />
+        ) : (
+          <ExamListPage onSelectExam={handleSelectExam} />
+        )
       case 'exam-detail':
         return selectedExamId ? (
           <ExamDetailPage
