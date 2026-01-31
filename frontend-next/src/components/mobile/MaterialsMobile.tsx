@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { Search, Heart } from 'lucide-react';
+import { Search, Heart, Quote, Copy, Sparkles } from 'lucide-react';
 import { useMaterials } from '@/services/hooks';
 import type { Material } from '@/services/api';
 import './MaterialsMobile.css';
@@ -24,34 +24,48 @@ export default function MaterialsMobile({ initialData = [] }: MaterialsMobilePro
 
     const { materials, loading, toggleFavorite } = useMaterials(params, initialData);
 
+    const dailyQuote = useMemo(() => {
+        if (initialData && initialData.length > 0) return initialData[0];
+        if (materials && materials.length > 0) return materials[0];
+        return null;
+    }, [initialData, materials]);
+
     const handleToggleFavorite = async (e: React.MouseEvent, id: string, isFavorite: boolean) => {
         e.preventDefault();
         e.stopPropagation();
         await toggleFavorite(id, isFavorite);
     };
 
+    const handleCopy = (content: string) => {
+        navigator.clipboard.writeText(content);
+        // Simple success feedback can be added here if needed
+    };
+
     return (
-        <div className="materials-mobile">
+        <div className="materials-mobile-container">
             {!isSearchMode ? (
-                <div className="mobile-header-inner">
-                    <h1 className="mobile-page-title">素材积累</h1>
-                    <button className="mobile-search-trigger" onClick={() => setIsSearchMode(true)}>
-                        <Search size={22} />
+                <div className="materials-header-premium">
+                    <div className="header-text-group">
+                        <h1 className="main-title">素材积累</h1>
+                        <p className="sub-title">每日精选金句，赋能申论写作</p>
+                    </div>
+                    <button className="premium-search-trigger" onClick={() => setIsSearchMode(true)}>
+                        <Search size={22} strokeWidth={2.5} />
                     </button>
                 </div>
             ) : (
-                <div className="mobile-search-container">
-                    <div className="mobile-search-wrapper">
-                        <Search size={18} className="mobile-search-icon" />
+                <div className="premium-search-overlay">
+                    <div className="search-bar-glass">
+                        <Search size={18} className="search-icon-dim" />
                         <input
                             autoFocus
-                            className="mobile-search-input"
+                            className="premium-search-input"
                             type="text"
-                            placeholder="搜索金句、素材..."
+                            placeholder="搜索申论亮点素材..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
-                        <button className="mobile-cancel-search" onClick={() => {
+                        <button className="exit-search-btn" onClick={() => {
                             setIsSearchMode(false);
                             setSearchQuery('');
                         }}>取消</button>
@@ -59,55 +73,90 @@ export default function MaterialsMobile({ initialData = [] }: MaterialsMobilePro
                 </div>
             )}
 
-            <div className="mobile-categories-scroll">
-                {categories.map(cat => (
-                    <button
-                        key={cat}
-                        className={`mobile-category-pill ${activeCategory === cat ? 'active' : ''}`}
-                        onClick={() => setActiveCategory(cat)}
-                    >
-                        {cat}
-                    </button>
-                ))}
+            {/* Daily Highlight Card - The "Wow" Factor */}
+            {!isSearchMode && dailyQuote && activeCategory === '全部' && (
+                <div className="daily-highlight-wrapper">
+                    <div className="daily-card-glass">
+                        <div className="daily-tag">
+                            <Sparkles size={14} className="sparkle-icon" />
+                            <span>今日金句</span>
+                        </div>
+                        <Quote className="quote-icon-bg" size={80} />
+                        <p className="daily-content">{dailyQuote.content}</p>
+                        <div className="daily-footer">
+                            <span className="daily-source">— {dailyQuote.source || '官方精选'}</span>
+                            <button className="daily-copy-btn" onClick={() => handleCopy(dailyQuote.content)}>
+                                <Copy size={16} />
+                                <span>一键复制</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <div className="premium-categories-wrapper">
+                <div className="categories-glass-scroll">
+                    {categories.map(cat => (
+                        <button
+                            key={cat}
+                            className={`premium-category-pill ${activeCategory === cat ? 'active' : ''}`}
+                            onClick={() => setActiveCategory(cat)}
+                        >
+                            {cat}
+                        </button>
+                    ))}
+                </div>
             </div>
 
-            <div className="mobile-materials-list">
+            <div className="premium-materials-list">
                 {materials.length === 0 && !loading ? (
-                    <div className="mobile-empty">
-                        <p>没有找到相关素材</p>
+                    <div className="premium-empty-state">
+                        <div className="empty-icon-wrapper">📖</div>
+                        <p>探索中... 暂无相关素材</p>
                     </div>
                 ) : (
-                    materials.map(item => (
-                        <div key={item.id} className="mobile-material-card">
-                            <div className="mobile-material-header">
-                                <span className="mobile-material-cat">{item.category}</span>
+                    materials.map((item, index) => (
+                        <div
+                            key={item.id}
+                            className="premium-material-card"
+                            style={{ animationDelay: `${index * 0.05}s` }}
+                        >
+                            <div className="card-top-info">
+                                <span className="category-label">{item.category}</span>
                                 <button
-                                    className={`mobile-fav-btn ${item.is_favorite ? 'active' : ''}`}
+                                    className={`fav-icon-btn ${item.is_favorite ? 'is-active' : ''}`}
                                     onClick={(e) => handleToggleFavorite(e, item.id, item.is_favorite)}
                                 >
-                                    <Heart size={18} fill={item.is_favorite ? "currentColor" : "none"} />
+                                    <Heart size={20} fill={item.is_favorite ? "currentColor" : "none"} strokeWidth={2} />
                                 </button>
                             </div>
-                            <div className="mobile-material-content">
-                                {item.content}
+
+                            <div className="card-main-content">
+                                <p className="editorial-text">{item.content}</p>
                             </div>
-                            <div className="mobile-material-footer">
-                                <span className="mobile-material-source">{item.source || '官方精选'}</span>
+
+                            <div className="card-bottom-editorial">
+                                <div className="source-info">
+                                    <div className="source-dot"></div>
+                                    <span className="source-text">{item.source || '新华社、人民日报等'}</span>
+                                </div>
                                 <button
-                                    className="mobile-copy-btn"
-                                    onClick={() => {
-                                        navigator.clipboard.writeText(item.content);
-                                        // Simple feedback could be added here
-                                    }}
+                                    className="ghost-copy-btn"
+                                    onClick={() => handleCopy(item.content)}
                                 >
-                                    复制
+                                    <Copy size={14} />
+                                    <span>复制</span>
                                 </button>
                             </div>
                         </div>
                     ))
                 )}
-                {loading && materials.length === 0 && (
-                    <div className="mobile-loading">加载中...</div>
+                {loading && (
+                    <div className="premium-loading-shimmer">
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="shimmer-card"></div>
+                        ))}
+                    </div>
                 )}
             </div>
         </div>
