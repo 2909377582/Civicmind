@@ -20,7 +20,7 @@ const app = express();
 
 // 中间件
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:3001', 'http://127.0.0.1:3001'],
+  origin: config.app.allowedOrigins,
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));

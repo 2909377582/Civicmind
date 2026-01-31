@@ -19,6 +19,16 @@ export const config = {
         version: process.env.APP_VERSION || '1.0.0',
         port: parseInt(process.env.PORT || '3000'),
         env: process.env.NODE_ENV || 'development',
+        allowedOrigins: process.env.ALLOWED_ORIGINS
+            ? process.env.ALLOWED_ORIGINS.split(',')
+            : [
+                'http://localhost:3000',
+                'http://127.0.0.1:3000',
+                'http://localhost:3001',
+                'http://127.0.0.1:3001',
+                'https://www.civicmind.cloud',
+                'https://civicmind.cloud'
+            ],
     },
     supabase: {
         url: process.env.SUPABASE_URL || '',
