@@ -5,7 +5,7 @@ import Link from 'next/link';
 import useSWR from 'swr';
 import { ChevronRight } from 'lucide-react';
 import { examApi } from '@/services/api';
-import type { ExamsByYear } from '@/services/api';
+import type { ExamsByYear, ExamPackage } from '@/services/api';
 import './ExamListMobile.css';
 
 interface ExamListMobileProps {
@@ -17,14 +17,25 @@ export default function ExamListMobile({ initialData }: ExamListMobileProps) {
         fallbackData: initialData,
     });
 
-    const [expandedYear, setExpandedYear] = useState<number | null>(null);
+    // We only set the initial expanded year once
+    const [expandedYear, setExpandedYear] = useState<number | null>(
+        initialData && initialData.length > 0 ? initialData[0].year : null
+    );
 
-    // Initialize expanded year once data is available
+    // Sync expanded year only if it's currently null and data arrives for the first time
+    // But we don't want to use a useEffect that reacts to expandedYear changing to null
+    // So we just rely on the initial state or manual toggle.
+
+    // If we really want to auto-expand after a LATE data load:
+    const [hasAttemptedAutoExpand, setHasAttemptedAutoExpand] = useState(false);
     useEffect(() => {
-        if (!expandedYear && examsByYear && examsByYear.length > 0) {
-            setExpandedYear(examsByYear[0].year);
+        if (!hasAttemptedAutoExpand && examsByYear && examsByYear.length > 0) {
+            if (expandedYear === null) {
+                setExpandedYear(examsByYear[0].year);
+            }
+            setHasAttemptedAutoExpand(true);
         }
-    }, [examsByYear, expandedYear]);
+    }, [examsByYear, expandedYear, hasAttemptedAutoExpand]);
 
     const getExamTypeIcon = (type: string) => {
         switch (type) {
@@ -55,13 +66,13 @@ export default function ExamListMobile({ initialData }: ExamListMobileProps) {
                         <p>暂无试卷数据</p>
                     </div>
                 ) : (
-                    examsByYear.map((yearGroup) => (
+                    examsByYear.map((yearGroup: ExamsByYear) => (
                         <div key={yearGroup.year} className="mobile-year-section">
                             <div
                                 className={`mobile-year-header ${expandedYear === yearGroup.year ? 'expanded' : ''}`}
-                                onClick={() => setExpandedYear(
-                                    expandedYear === yearGroup.year ? null : yearGroup.year
-                                )}
+                                onClick={() => {
+                                    setExpandedYear(expandedYear === yearGroup.year ? null : yearGroup.year);
+                                }}
                             >
                                 <span className="mobile-year-badge">{yearGroup.year}年</span>
                                 <span className={`mobile-expand-icon ${expandedYear === yearGroup.year ? 'is-expanded' : ''}`}>
@@ -71,24 +82,20 @@ export default function ExamListMobile({ initialData }: ExamListMobileProps) {
 
                             {expandedYear === yearGroup.year && (
                                 <div className="mobile-exams-list">
-                                    {yearGroup.exams.map((exam) => (
-                                        <Link
-                                            key={exam.id}
-                                            href={`/exam/${exam.id}`}
-                                            className="mobile-exam-card"
-                                        >
+                                    {yearGroup.exams.map((exam: ExamPackage) => (
+                                        <Link key={exam.id} href={`/exam/${exam.id}`} className="mobile-exam-card">
                                             <div className="mobile-card-top">
-                                                <div className="mobile-exam-icon">{getExamTypeIcon(exam.exam_type)}</div>
+                                                <div className="mobile-exam-icon">
+                                                    {getExamTypeIcon(exam.exam_type)}
+                                                </div>
                                                 <div className="mobile-exam-info">
-                                                    <h3 className="mobile-exam-name">{exam.exam_name}</h3>
+                                                    <h3 className="mobile-exam-name">{exam.title}</h3>
                                                     <div className="mobile-exam-tags">
                                                         <span className={`mobile-tag ${getExamTypeBadgeClass(exam.exam_type)}`}>
                                                             {exam.exam_type}
                                                         </span>
                                                         {exam.exam_level && (
-                                                            <span className="mobile-tag level-tag">
-                                                                {exam.exam_level}
-                                                            </span>
+                                                            <span className="mobile-tag level-tag">{exam.exam_level}</span>
                                                         )}
                                                     </div>
                                                 </div>
