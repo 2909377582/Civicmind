@@ -1,5 +1,6 @@
 .mobile-layout {
     height: 100vh;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -24,6 +25,7 @@
     color: #1a1a1a;
     letter-spacing: -0.5px;
 }
+
 
 .mobile-content {
     flex: 1;

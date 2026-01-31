@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { Search, ChevronRight, Heart } from 'lucide-react';
+import { Search, Heart } from 'lucide-react';
 import { useMaterials } from '@/services/hooks';
 import type { Material } from '@/services/api';
 import './MaterialsMobile.css';
@@ -22,7 +22,6 @@ export default function MaterialsMobile({ initialData = [] }: MaterialsMobilePro
         query: searchQuery || undefined,
     }), [activeCategory, searchQuery]);
 
-    // Pass initialData as fallback for SWR
     const { materials, loading, toggleFavorite } = useMaterials(params, initialData);
 
     const handleToggleFavorite = async (e: React.MouseEvent, id: string, isFavorite: boolean) => {
@@ -34,24 +33,25 @@ export default function MaterialsMobile({ initialData = [] }: MaterialsMobilePro
     return (
         <div className="materials-mobile">
             {!isSearchMode ? (
-                <div className="materials-header">
-                    <h1 className="materials-title">素材积累</h1>
-                    <button className="search-trigger" onClick={() => setIsSearchMode(true)}>
+                <div className="mobile-header-inner">
+                    <h1 className="mobile-page-title">素材积累</h1>
+                    <button className="mobile-search-trigger" onClick={() => setIsSearchMode(true)}>
                         <Search size={22} />
                     </button>
                 </div>
             ) : (
-                <div className="search-bar-active">
-                    <div className="search-input-wrapper">
-                        <Search size={18} className="inner-search-icon" />
+                <div className="mobile-search-container">
+                    <div className="mobile-search-wrapper">
+                        <Search size={18} className="mobile-search-icon" />
                         <input
                             autoFocus
+                            className="mobile-search-input"
                             type="text"
                             placeholder="搜索金句、素材..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
-                        <button className="cancel-search" onClick={() => {
+                        <button className="mobile-cancel-search" onClick={() => {
                             setIsSearchMode(false);
                             setSearchQuery('');
                         }}>取消</button>
@@ -59,11 +59,11 @@ export default function MaterialsMobile({ initialData = [] }: MaterialsMobilePro
                 </div>
             )}
 
-            <div className="categories-scroll">
+            <div className="mobile-categories-scroll">
                 {categories.map(cat => (
                     <button
                         key={cat}
-                        className={`category-chip ${activeCategory === cat ? 'active' : ''}`}
+                        className={`mobile-category-pill ${activeCategory === cat ? 'active' : ''}`}
                         onClick={() => setActiveCategory(cat)}
                     >
                         {cat}
@@ -71,28 +71,43 @@ export default function MaterialsMobile({ initialData = [] }: MaterialsMobilePro
                 ))}
             </div>
 
-            <div className="materials-list">
+            <div className="mobile-materials-list">
                 {materials.length === 0 && !loading ? (
-                    <div className="empty-state">
+                    <div className="mobile-empty">
                         <p>没有找到相关素材</p>
                     </div>
                 ) : (
                     materials.map(item => (
-                        <div key={item.id} className="material-card">
-                            <div className="material-content">
-                                <p className="material-text">{item.content}</p>
-                                <div className="material-meta">
-                                    <span className="material-tag">{item.category}</span>
-                                    <button
-                                        className={`favorite-btn ${item.is_favorite ? 'active' : ''}`}
-                                        onClick={(e) => handleToggleFavorite(e, item.id, item.is_favorite)}
-                                    >
-                                        <Heart size={18} fill={item.is_favorite ? "currentColor" : "none"} />
-                                    </button>
-                                </div>
+                        <div key={item.id} className="mobile-material-card">
+                            <div className="mobile-material-header">
+                                <span className="mobile-material-cat">{item.category}</span>
+                                <button
+                                    className={`mobile-fav-btn ${item.is_favorite ? 'active' : ''}`}
+                                    onClick={(e) => handleToggleFavorite(e, item.id, item.is_favorite)}
+                                >
+                                    <Heart size={18} fill={item.is_favorite ? "currentColor" : "none"} />
+                                </button>
+                            </div>
+                            <div className="mobile-material-content">
+                                {item.content}
+                            </div>
+                            <div className="mobile-material-footer">
+                                <span className="mobile-material-source">{item.source || '官方精选'}</span>
+                                <button
+                                    className="mobile-copy-btn"
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(item.content);
+                                        // Simple feedback could be added here
+                                    }}
+                                >
+                                    复制
+                                </button>
                             </div>
                         </div>
                     ))
+                )}
+                {loading && materials.length === 0 && (
+                    <div className="mobile-loading">加载中...</div>
                 )}
             </div>
         </div>
