@@ -5,7 +5,7 @@ import Link from 'next/link';
 import useSWR from 'swr';
 import { ChevronRight } from 'lucide-react';
 import { examApi } from '@/services/api';
-import type { ExamsByYear, ExamPackage } from '@/services/api';
+import type { ExamsByYear, ExamListItem } from '@/services/api';
 import './ExamListMobile.css';
 
 interface ExamListMobileProps {
@@ -23,10 +23,6 @@ export default function ExamListMobile({ initialData }: ExamListMobileProps) {
     );
 
     // Sync expanded year only if it's currently null and data arrives for the first time
-    // But we don't want to use a useEffect that reacts to expandedYear changing to null
-    // So we just rely on the initial state or manual toggle.
-
-    // If we really want to auto-expand after a LATE data load:
     const [hasAttemptedAutoExpand, setHasAttemptedAutoExpand] = useState(false);
     useEffect(() => {
         if (!hasAttemptedAutoExpand && examsByYear && examsByYear.length > 0) {
@@ -82,14 +78,14 @@ export default function ExamListMobile({ initialData }: ExamListMobileProps) {
 
                             {expandedYear === yearGroup.year && (
                                 <div className="mobile-exams-list">
-                                    {yearGroup.exams.map((exam: ExamPackage) => (
+                                    {yearGroup.exams.map((exam: ExamListItem) => (
                                         <Link key={exam.id} href={`/exam/${exam.id}`} className="mobile-exam-card">
                                             <div className="mobile-card-top">
                                                 <div className="mobile-exam-icon">
                                                     {getExamTypeIcon(exam.exam_type)}
                                                 </div>
                                                 <div className="mobile-exam-info">
-                                                    <h3 className="mobile-exam-name">{exam.title}</h3>
+                                                    <h3 className="mobile-exam-name">{exam.exam_name}</h3>
                                                     <div className="mobile-exam-tags">
                                                         <span className={`mobile-tag ${getExamTypeBadgeClass(exam.exam_type)}`}>
                                                             {exam.exam_type}
