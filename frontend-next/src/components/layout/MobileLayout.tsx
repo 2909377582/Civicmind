@@ -52,23 +52,28 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
             </header>
 
             <main className="mobile-content">
-                {/* Persistent Tab Views - Client Side Only */}
+                {/* 
+                  微信级流畅度的核心：
+                  1. 这里的三个 Tab 组件永远不会被销毁(Unmount)
+                  2. 它们不再依赖 children 属性，避免了页面切换时的组件替换开销
+                  3. 每个 Tab 拥有独立的滚动容器，保留滚动位置
+                */}
                 <div className={`tab-view ${activeTab === 'exams' ? 'active' : ''}`}
-                    style={{ display: activeTab === 'exams' ? 'block' : 'none' }}>
-                    {activeTab === 'exams' ? children : <ExamListMobile initialData={[]} />}
+                    style={{ visibility: activeTab === 'exams' ? 'visible' : 'hidden' }}>
+                    <ExamListMobile initialData={[]} />
                 </div>
 
                 <div className={`tab-view ${activeTab === 'materials' ? 'active' : ''}`}
-                    style={{ display: activeTab === 'materials' ? 'block' : 'none' }}>
-                    {activeTab === 'materials' ? children : <MaterialsMobile />}
+                    style={{ visibility: activeTab === 'materials' ? 'visible' : 'hidden' }}>
+                    <MaterialsMobile />
                 </div>
 
                 <div className={`tab-view ${activeTab === 'history' ? 'active' : ''}`}
-                    style={{ display: activeTab === 'history' ? 'block' : 'none' }}>
-                    {activeTab === 'history' ? children : <HistoryMobile />}
+                    style={{ visibility: activeTab === 'history' ? 'visible' : 'hidden' }}>
+                    <HistoryMobile />
                 </div>
 
-                {/* Non-tab routes (Details, Reports, etc.) */}
+                {/* 非主 Tab 路由（如：题目详情、报告、登录等） */}
                 {!isTabRoute && (
                     <div className="detail-view active">
                         {children}
