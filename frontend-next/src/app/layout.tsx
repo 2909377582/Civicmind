@@ -17,9 +17,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CivicMind | 申发论述批改",
+  title: "CivicMind | 申论智能批改",
   description: "专业的公考申论 AI 批改平台",
 };
+
+
 
 export default async function RootLayout({
   children,
