@@ -151,6 +151,10 @@
     color: #202124;
     line-height: 1.5;
     margin-bottom: 16px;
+    /* Fix for text overflow */
+    word-break: break-word;
+    white-space: normal;
+    overflow-wrap: break-word;
 }
 
 .m-q-footer {
