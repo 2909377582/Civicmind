@@ -41,6 +41,8 @@
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     background: #f8f9fa;
+    /* 为底部的 Fixed 导航栏预留空间，确保拉到底能看到全部内容 */
+    padding-bottom: calc(60px + env(safe-area-inset-bottom) + 20px);
     /* 我们使用更短的淡入淡出，追求“瞬发”感 */
     transition: opacity 0.12s ease-out;
 }
