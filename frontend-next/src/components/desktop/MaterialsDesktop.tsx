@@ -2,11 +2,16 @@
 
 import React, { useState, useMemo } from 'react'
 import { useMaterials, useMaterialStats } from '@/services/hooks'
+import type { Material } from '@/services/api'
 import './MaterialsDesktop.css'
 
 const categories = ['全部', '乡村振兴', '基层治理', '科技创新', '生态文明', '民生保障', '文化建设']
 
-const MaterialsDesktop: React.FC = () => {
+interface MaterialsDesktopProps {
+    initialData?: Material[];
+}
+
+const MaterialsDesktop: React.FC<MaterialsDesktopProps> = ({ initialData = [] }) => {
     const [activeCategory, setActiveCategory] = useState('全部')
     const [searchQuery, setSearchQuery] = useState('')
     const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
@@ -17,7 +22,8 @@ const MaterialsDesktop: React.FC = () => {
         is_favorite: showFavoritesOnly || undefined
     }), [activeCategory, searchQuery, showFavoritesOnly])
 
-    const { materials, loading, error, toggleFavorite } = useMaterials(params)
+    // Pass initialData as fallback for SWR
+    const { materials, loading, error, toggleFavorite } = useMaterials(params, initialData)
     const { stats } = useMaterialStats()
 
     const handleToggleFavorite = async (id: string, isFavorite: boolean) => {
@@ -91,7 +97,7 @@ const MaterialsDesktop: React.FC = () => {
                         </div>
                     </div>
 
-                    {loading ? (
+                    {loading && materials.length === 0 ? (
                         <div className="loading-state">
                             <div className="loader"></div>
                             <span>加载素材中...</span>
@@ -136,11 +142,13 @@ const MaterialsDesktop: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    <div className="material-tags">
-                                        {material.tags.map((tag, i) => (
-                                            <span key={i} className="tag">{tag}</span>
-                                        ))}
-                                    </div>
+                                    {material.tags && material.tags.length > 0 && (
+                                        <div className="material-tags">
+                                            {material.tags.map((tag, i) => (
+                                                <span key={i} className="tag">{tag}</span>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>

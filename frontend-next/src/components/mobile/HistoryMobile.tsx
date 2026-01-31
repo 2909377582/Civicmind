@@ -4,12 +4,22 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserContext } from '../../contexts/UserContext';
 import { gradingApi } from '../../services/api';
+import type { GradingHistoryItem } from '../../services/api';
 import './HistoryMobile.css';
 
-export default function HistoryMobile() {
+interface HistoryMobileProps {
+    initialData?: GradingHistoryItem[];
+}
+
+export default function HistoryMobile({ initialData = [] }: HistoryMobileProps) {
     const router = useRouter();
+    // Use initialData if available, otherwise fallback to local context
+    // Ideally we want to merge them or use SWR here too for consistency
     const { stats, loading, refetch } = useUserContext();
-    const history = stats.history;
+
+    // We can use initialData for the first render to avoid "加载中"
+    const history = initialData.length > 0 ? initialData : stats.history;
+
     const [deleting, setDeleting] = useState<string | null>(null);
 
     const onViewReport = (answerId: string) => {
@@ -32,12 +42,14 @@ export default function HistoryMobile() {
     };
 
     const formatDate = (dateStr: string) => {
+        if (!dateStr) return '';
         const date = new Date(dateStr);
         return `${date.getMonth() + 1}月${date.getDate()}日 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
     };
 
-    if (loading) return <div className="mobile-loading">加载中...</div>;
-    if (history.length === 0) return <div className="mobile-empty">暂无练习记录</div>;
+    // If we have initialData, we don't show the loading state on first paint
+    if (loading && initialData.length === 0) return <div className="mobile-loading">加载中...</div>;
+    if (history.length === 0 && !loading) return <div className="mobile-empty">暂无练习记录</div>;
 
     return (
         <div className="history-mobile">
@@ -46,15 +58,15 @@ export default function HistoryMobile() {
             {/* Stats Row */}
             <div className="mobile-stats-row">
                 <div className="mobile-stat-item">
-                    <span className="m-stat-val">{stats.total_count}</span>
+                    <span className="m-stat-val">{stats.total_count || initialData.length}</span>
                     <span className="m-stat-lbl">练习数</span>
                 </div>
                 <div className="mobile-stat-item">
-                    <span className="m-stat-val">{Math.round(stats.avg_score_rate * 100)}%</span>
+                    <span className="m-stat-val">{Math.round(stats.avg_score_rate * 100) || 0}%</span>
                     <span className="m-stat-lbl">平均分率</span>
                 </div>
                 <div className="mobile-stat-item">
-                    <span className="m-stat-val">{stats.continuous_days}</span>
+                    <span className="m-stat-val">{stats.continuous_days || 0}</span>
                     <span className="m-stat-lbl">坚持天数</span>
                 </div>
             </div>

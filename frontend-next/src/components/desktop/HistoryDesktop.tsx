@@ -6,10 +6,17 @@ import { gradingApi, GradingHistoryItem } from '@/services/api'
 import { useUserContext } from '@/contexts/UserContext'
 import './HistoryDesktop.css'
 
-const HistoryDesktop: React.FC = () => {
+interface HistoryDesktopProps {
+    initialData?: GradingHistoryItem[];
+}
+
+const HistoryDesktop: React.FC<HistoryDesktopProps> = ({ initialData = [] }) => {
     const router = useRouter()
     const { stats, loading, refetch } = useUserContext()
-    const history = stats.history
+
+    // Choose between server data and client context data
+    const history = initialData.length > 0 ? initialData : stats.history;
+
     const [deleting, setDeleting] = useState<string | null>(null)
 
     const handleDelete = async (id: string) => {
@@ -53,6 +60,7 @@ const HistoryDesktop: React.FC = () => {
     }
 
     const formatDate = (dateStr: string) => {
+        if (!dateStr) return '';
         const date = new Date(dateStr)
         return date.toLocaleDateString('zh-CN', {
             year: 'numeric',
@@ -92,7 +100,7 @@ const HistoryDesktop: React.FC = () => {
                 </div>
             </div>
 
-            {loading ? (
+            {(loading && initialData.length === 0) ? (
                 <div className="loading-state">
                     <div className="loading-spinner">⏳</div>
                     <p>加载中...</p>
@@ -105,7 +113,6 @@ const HistoryDesktop: React.FC = () => {
                 </div>
             ) : (
                 <div className="history-groups">
-                    {/* 分组显示逻辑 */}
                     {(() => {
                         // 1. 分组
                         const groups: Record<string, GradingHistoryItem[]> = {};
