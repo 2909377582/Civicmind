@@ -3,10 +3,20 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { preload } from 'swr';
+import { materialApi, gradingApi } from '../../services/api';
 import './MobileNavbar.css';
 
 export default function MobileNavbar() {
     const pathname = usePathname();
+
+    // Pre-warm the cache for Materials and History
+    React.useEffect(() => {
+        // Preload materials (default category)
+        preload(['materials', undefined, undefined, undefined], () => materialApi.list());
+        // Preload history
+        preload('user/history', () => gradingApi.myHistory(20));
+    }, []);
 
     const isActive = (path: string) => {
         if (path === '/') return pathname === '/' || pathname.startsWith('/exams');
