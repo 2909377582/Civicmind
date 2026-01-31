@@ -1,4 +1,5 @@
 import { gradingApi, questionApi } from "@/services/api";
+import type { UserAnswer, Question } from "@/services/api";
 import ReportDetailDesktop from "@/components/desktop/ReportDetailDesktop";
 import ReportDetailMobile from "@/components/mobile/ReportDetailMobile";
 import { isMobileDevice } from "@/utils/device";
@@ -8,8 +9,8 @@ export const dynamic = 'force-dynamic';
 export default async function ReportServerPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
 
-    let result = null;
-    let question = null;
+    let result: UserAnswer | null = null;
+    let question: Question | null = null;
 
     try {
         // Fetch answer result
