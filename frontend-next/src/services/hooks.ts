@@ -217,12 +217,13 @@ export function useMaterials(params?: {
     category?: string
     query?: string
     is_favorite?: boolean
-}) {
+}, initialData: Material[] = []) {
     const key = ['materials', params?.category, params?.query, params?.is_favorite];
 
-    const { data: materials = [], error, isLoading, mutate: refetch } = useSWR(
+    const { data: materials = initialData, error, isLoading, mutate: refetch } = useSWR(
         key,
-        () => materialApi.list(params)
+        () => materialApi.list(params),
+        { fallbackData: initialData }
     );
 
     const toggleFavorite = async (id: string, isFavorite: boolean) => {

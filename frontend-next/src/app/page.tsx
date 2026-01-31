@@ -1,28 +1,16 @@
-import { examApi } from "@/services/api";
-import ExamListMobile from "@/components/mobile/ExamListMobile";
 import ExamListDesktop from "@/components/desktop/ExamListDesktop";
+import ExamListMobile from "@/components/mobile/ExamListMobile";
 import { isMobileDevice } from "@/utils/device";
-
-// Force dynamic rendering if API changes frequently, or use default caching
-export const dynamic = 'force-dynamic';
+import { examApi } from "@/services/api";
 
 export default async function Home() {
-  let initialData: any[] = [];
-  try {
-    initialData = await examApi.list();
-  } catch (err) {
-    console.error("Failed to fetch exam list:", err);
-  }
-
   const isMobile = await isMobileDevice();
 
-  return (
-    <main className="min-h-screen bg-gray-50">
-      {isMobile ? (
-        <ExamListMobile initialData={initialData} />
-      ) : (
-        <ExamListDesktop initialData={initialData} />
-      )}
-    </main>
-  );
+  // Server-side data fetching
+  // This allows Next.js to pre-render the page with data
+  const initialExams = await examApi.list().catch(() => []);
+
+  return isMobile ?
+    <ExamListMobile initialData={initialExams} /> :
+    <ExamListDesktop initialData={initialExams} />;
 }
