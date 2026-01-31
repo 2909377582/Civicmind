@@ -267,7 +267,7 @@ export class GradingService {
                 word_count: item.word_count,
                 grading_status: status,
                 progress: progressMap[status] || 0,
-                total_score: item.grading_result?.total_score || null,
+                total_score: item.grading_result?.total_score ?? null,
                 is_graded: item.is_graded,
                 created_at: item.created_at,
                 graded_at: item.graded_at,

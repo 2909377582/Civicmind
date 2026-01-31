@@ -1,0 +1,30 @@
+.polished-text-content {
+    line-height: 2;
+    color: #374151;
+    /* gray-700 */
+    white-space: pre-wrap;
+}
+
+.polish-change {
+    display: inline;
+    margin: 0 2px;
+}
+
+.polish-deleted {
+    color: #ef4444;
+    /* error-500 */
+    text-decoration: line-through;
+    background: rgba(239, 68, 68, 0.1);
+    padding: 0.125rem 0.25rem;
+    border-radius: 2px;
+    margin-right: 0.25rem;
+}
+
+.polish-added {
+    color: #10b981;
+    /* success-600 */
+    background: rgba(16, 185, 129, 0.15);
+    padding: 0.125rem 0.25rem;
+    border-radius: 2px;
+    font-weight: 500;
+}

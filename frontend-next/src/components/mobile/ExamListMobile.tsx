@@ -1,0 +1,102 @@
+"use client";
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import type { ExamsByYear } from '@/services/api';
+import './ExamListMobile.css';
+
+interface ExamListMobileProps {
+    initialData: ExamsByYear[];
+}
+
+export default function ExamListMobile({ initialData }: ExamListMobileProps) {
+    const router = useRouter();
+    const [examsByYear] = useState<ExamsByYear[]>(initialData);
+    const [expandedYear, setExpandedYear] = useState<number | null>(
+        initialData.length > 0 ? initialData[0].year : null
+    );
+
+    const getExamTypeIcon = (type: string) => {
+        switch (type) {
+            case '国考': return '🏛️';
+            case '省考': return '🏢';
+            case '事业单位': return '🏫';
+            case '选调生': return '🎓';
+            default: return '📝';
+        }
+    };
+
+    const getExamTypeBadgeClass = (type: string) => {
+        switch (type) {
+            case '国考': return 'badge-national';
+            case '省考': return 'badge-provincial';
+            case '事业单位': return 'badge-institution';
+            default: return 'badge-other';
+        }
+    };
+
+    return (
+        <div className="exam-list-mobile">
+            <h2 className="mobile-page-title">真题试卷</h2>
+
+            <div className="mobile-years-container">
+                {examsByYear.length === 0 ? (
+                    <div className="mobile-empty-state">
+                        <p>暂无试卷数据</p>
+                    </div>
+                ) : (
+                    examsByYear.map((yearGroup) => (
+                        <div key={yearGroup.year} className="mobile-year-section">
+                            <div
+                                className={`mobile-year-header ${expandedYear === yearGroup.year ? 'expanded' : ''}`}
+                                onClick={() => setExpandedYear(
+                                    expandedYear === yearGroup.year ? null : yearGroup.year
+                                )}
+                            >
+                                <span className="mobile-year-badge">{yearGroup.year}年</span>
+                                <span className="mobile-expand-icon">
+                                    {expandedYear === yearGroup.year ? '▼' : '▶'}
+                                </span>
+                            </div>
+
+                            {expandedYear === yearGroup.year && (
+                                <div className="mobile-exams-list">
+                                    {yearGroup.exams.map((exam) => (
+                                        <div
+                                            key={exam.id}
+                                            className="mobile-exam-card"
+                                            onClick={() => router.push(`/exam/${exam.id}`)}
+                                        >
+                                            <div className="mobile-card-top">
+                                                <div className="mobile-exam-icon">{getExamTypeIcon(exam.exam_type)}</div>
+                                                <div className="mobile-exam-info">
+                                                    <h3 className="mobile-exam-name">{exam.exam_name}</h3>
+                                                    <div className="mobile-exam-tags">
+                                                        <span className={`mobile-tag ${getExamTypeBadgeClass(exam.exam_type)}`}>
+                                                            {exam.exam_type}
+                                                        </span>
+                                                        {exam.exam_level && (
+                                                            <span className="mobile-tag level-tag">
+                                                                {exam.exam_level}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="mobile-card-bottom">
+                                                <span>{exam.question_count} 道题目</span>
+                                                <span className="mobile-divider">|</span>
+                                                <span>总分 {exam.total_score}</span>
+                                                <button className="mobile-start-btn">开始</button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    ))
+                )}
+            </div>
+        </div>
+    );
+}
