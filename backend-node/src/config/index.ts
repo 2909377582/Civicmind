@@ -13,10 +13,10 @@ export const config = {
     },
     supabase: {
         url: process.env.SUPABASE_URL || '',
-        key: process.env.SUPABASE_KEY || '',
+        key: process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || '',
     },
     ai: {
-        apiKey: process.env.AI_API_KEY || '',
+        apiKey: process.env.AI_API_KEY || process.env.DEEPSEEK_API_KEY || '',
         baseUrl: process.env.AI_API_BASE_URL || 'https://api.deepseek.com',
         model: process.env.AI_MODEL || 'deepseek-chat',
         geminiKey: process.env.GEMINI_API_KEY || '',
