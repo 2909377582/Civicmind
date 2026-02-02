@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { UserProvider } from "../contexts/UserContext";
+import { AuthProvider } from "../contexts/AuthContext";
 import { isMobileDevice } from "../utils/device";
 import MobileLayout from "../components/layout/MobileLayout";
 import DesktopLayout from "../components/layout/DesktopLayout";
@@ -36,20 +37,23 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <UserProvider>
-          <SWRConfig value={{
-            revalidateOnFocus: false,
-            revalidateIfStale: true,
-            dedupingInterval: 5000,
-          }}>
-            {isMobile ? (
-              <MobileLayout>{children}</MobileLayout>
-            ) : (
-              <DesktopLayout>{children}</DesktopLayout>
-            )}
-          </SWRConfig>
-        </UserProvider>
+        <AuthProvider>
+          <UserProvider>
+            <SWRConfig value={{
+              revalidateOnFocus: false,
+              revalidateIfStale: true,
+              dedupingInterval: 5000,
+            }}>
+              {isMobile ? (
+                <MobileLayout>{children}</MobileLayout>
+              ) : (
+                <DesktopLayout>{children}</DesktopLayout>
+              )}
+            </SWRConfig>
+          </UserProvider>
+        </AuthProvider>
       </body>
     </html>
   );
 }
+

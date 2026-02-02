@@ -187,20 +187,16 @@ function App() {
     return <AdminPage />;
   }
 
-  // 如果是登录页面，渲染登录页面
-  if (currentPage === 'auth') {
-    return (
-      <AuthPage
-        onSuccess={() => setCurrentPage('exams')}
-        onSkip={() => setCurrentPage('exams')}
-      />
-    );
-  }
-
   return (
     <AuthProvider>
       <UserProvider>
-        {isMobile ? (
+        {/* 如果是登录页面，渲染登录页面 */}
+        {currentPage === 'auth' ? (
+          <AuthPage
+            onSuccess={() => setCurrentPage('exams')}
+            onSkip={() => setCurrentPage('exams')}
+          />
+        ) : isMobile ? (
           <MobileLayout
             currentPage={currentPage}
             onNavigate={(page: string) => {

@@ -3,7 +3,40 @@
  * 封装所有后端 API 调用
  */
 
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000/api/v1'
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api/v1'
+
+// 获取认证 Token
+function getAuthToken(): string | null {
+    if (typeof window === 'undefined') return null;
+
+    const savedSession = localStorage.getItem('civicmind_session');
+    if (!savedSession) return null;
+
+    try {
+        const session = JSON.parse(savedSession);
+        if (session.expires_at && Date.now() / 1000 < session.expires_at) {
+            return session.access_token;
+        }
+    } catch (e) {
+        console.error('Failed to parse session:', e);
+    }
+
+    return null;
+}
+
+// 认证用户类型
+export interface AuthUser {
+    id: string;
+    email: string;
+    created_at?: string;
+}
+
+// 认证会话类型
+export interface AuthSession {
+    access_token: string;
+    refresh_token: string;
+    expires_at: number;
+}
 
 // 通用请求方法
 async function request<T>(
@@ -33,11 +66,13 @@ async function request<T>(
                 signal = controller.signal;
             }
 
+            const authToken = getAuthToken();
             const config: RequestInit = {
                 ...fetchOptions,
                 signal,
                 headers: {
                     ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+                    ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
                     ...(fetchOptions.headers || {}),
                 },
             };
@@ -614,4 +649,39 @@ export interface ParsedExam {
     materials_content: string
     total_score: number
     questions: ParsedQuestion[]
+}
+
+// 认证相关 API
+export const authApi = {
+    // 用户注册
+    register: (email: string, password: string) =>
+        request<{
+            message: string;
+            user: AuthUser | null;
+            session: AuthSession | null;
+        }>('/auth/register', {
+            method: 'POST',
+            body: JSON.stringify({ email, password }),
+        }),
+
+    // 用户登录
+    login: (email: string, password: string) =>
+        request<{
+            message: string;
+            user: AuthUser | null;
+            session: AuthSession | null;
+        }>('/auth/login', {
+            method: 'POST',
+            body: JSON.stringify({ email, password }),
+        }),
+
+    // 用户登出
+    logout: () =>
+        request<{ message: string }>('/auth/logout', {
+            method: 'POST',
+        }),
+
+    // 获取当前用户
+    getCurrentUser: () =>
+        request<{ user: AuthUser }>('/auth/me'),
 }

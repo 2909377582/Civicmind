@@ -2,13 +2,24 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useAuth } from '../../contexts/AuthContext';
 import './Header.css';
 
 export default function Header() {
     const pathname = usePathname();
+    const router = useRouter();
+    const { user, signOut } = useAuth();
 
     const isActive = (path: string) => pathname === path;
+
+    const handleLogin = () => {
+        router.push('/auth');
+    };
+
+    const handleLogout = async () => {
+        await signOut();
+    };
 
     return (
         <header className="header">
@@ -37,9 +48,25 @@ export default function Header() {
             </nav>
 
             <div className="header-actions">
-                <button className="btn btn-secondary btn-sm">登录</button>
-                <button className="btn btn-primary btn-sm">免费试用</button>
+                {user ? (
+                    <>
+                        <span className="user-email">{user.email}</span>
+                        <button className="btn btn-secondary btn-sm" onClick={handleLogout}>
+                            登出
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        <button className="btn btn-secondary btn-sm" onClick={handleLogin}>
+                            登录
+                        </button>
+                        <button className="btn btn-primary btn-sm" onClick={handleLogin}>
+                            免费试用
+                        </button>
+                    </>
+                )}
             </div>
         </header>
     );
 }
+
