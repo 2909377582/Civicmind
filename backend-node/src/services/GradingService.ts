@@ -193,14 +193,17 @@ export class GradingService {
     /**
      * 获取用户自己的批改历史（公开，用于侧边栏显示）
      * 返回最近的批改记录，包含批改状态和进度
+     * @param limit 返回记录数量
+     * @param userId 可选，用户 ID。如果提供则只返回该用户的记录
      */
-    async getMyHistory(limit: number = 20): Promise<any[]> {
+    async getMyHistory(limit: number = 20, userId?: string): Promise<any[]> {
         // 1. 获取批改记录和题目基本信息，同时通过嵌套关联获取试卷名称
-        const { data, error } = await this.db
+        let query = this.db
             .from(this.table)
             .select(`
                 id,
                 question_id,
+                user_id,
                 content,
                 word_count,
                 grading_status,
@@ -224,6 +227,13 @@ export class GradingService {
             `)
             .order('created_at', { ascending: false })
             .limit(limit);
+
+        // 如果提供了 userId，只返回该用户的记录
+        if (userId) {
+            query = query.eq('user_id', userId);
+        }
+
+        const { data, error } = await query;
 
         if (error) {
             throw new Error(`获取批改记录失败: ${error.message}`);

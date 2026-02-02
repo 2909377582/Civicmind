@@ -15,6 +15,7 @@ import examRoutes from './routes/exams';
 import uploadRoutes from './routes/upload';
 import ocrRoutes from './routes/ocr';
 import debugRoutes from './routes/debug';
+import authRoutes from './routes/auth';
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.get('/health', (req, res) => {
 });
 
 // API 路由
+app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/grading', gradingRoutes);
 app.use('/api/v1/questions', questionRoutes);
 app.use('/api/v1/materials', materialRoutes);

@@ -5,6 +5,7 @@ import { Router, Request, Response } from 'express';
 import { GradingService } from '../services/GradingService';
 import { SubmitAnswerSchema } from '../models/UserAnswer';
 import { adminAuth } from '../middleware/adminAuth';
+import { optionalUserAuth } from '../middleware/userAuth';
 
 const router = Router();
 const gradingService = new GradingService();
@@ -12,7 +13,7 @@ const gradingService = new GradingService();
 /**
  * 提交作答并批改
  */
-router.post('/submit', async (req: Request, res: Response) => {
+router.post('/submit', optionalUserAuth, async (req: Request, res: Response) => {
     try {
         const parsed = SubmitAnswerSchema.safeParse(req.body);
         if (!parsed.success) {
@@ -20,7 +21,8 @@ router.post('/submit', async (req: Request, res: Response) => {
         }
 
         const { question_id, content, time_spent } = parsed.data;
-        const result = await gradingService.gradeAnswer(question_id, content, time_spent);
+        const userId = req.user?.id;
+        const result = await gradingService.gradeAnswer(question_id, content, time_spent, userId);
 
         res.json(result);
     } catch (error: any) {
@@ -31,7 +33,7 @@ router.post('/submit', async (req: Request, res: Response) => {
 /**
  * 异步提交作答 - 立即返回，后台批改
  */
-router.post('/submit-async', async (req: Request, res: Response) => {
+router.post('/submit-async', optionalUserAuth, async (req: Request, res: Response) => {
     try {
         const parsed = SubmitAnswerSchema.safeParse(req.body);
         if (!parsed.success) {
@@ -39,7 +41,8 @@ router.post('/submit-async', async (req: Request, res: Response) => {
         }
 
         const { question_id, content, time_spent } = parsed.data;
-        const result = await gradingService.submitAnswerAsync(question_id, content, time_spent);
+        const userId = req.user?.id;
+        const result = await gradingService.submitAnswerAsync(question_id, content, time_spent, userId);
 
         res.json(result);
     } catch (error: any) {
@@ -126,10 +129,11 @@ router.get('/report/:answerId', async (req: Request, res: Response) => {
  * 获取用户自己的批改历史（公开，无需认证）
  * 返回最近的批改记录，包含批改状态
  */
-router.get('/my-history', async (req: Request, res: Response) => {
+router.get('/my-history', optionalUserAuth, async (req: Request, res: Response) => {
     try {
         const limit = parseInt(String(req.query.limit) || '20');
-        const history = await gradingService.getMyHistory(limit);
+        const userId = req.user?.id;
+        const history = await gradingService.getMyHistory(limit, userId);
         res.json(history);
     } catch (error: any) {
         console.error('[Route] my-history error:', error);

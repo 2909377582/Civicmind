@@ -1,6 +1,13 @@
+import { useAuth } from '../contexts/AuthContext'
 import './Header.css'
 
-function Header() {
+interface HeaderProps {
+    onLogin?: () => void;
+}
+
+function Header({ onLogin }: HeaderProps) {
+    const { user, signOut } = useAuth()
+
     return (
         <header className="header">
             <div className="header-brand">
@@ -28,11 +35,27 @@ function Header() {
             </nav>
 
             <div className="header-actions">
-                <button className="btn btn-secondary btn-sm">登录</button>
-                <button className="btn btn-primary btn-sm">免费试用</button>
+                {user ? (
+                    <>
+                        <span className="user-email">{user.email}</span>
+                        <button className="btn btn-secondary btn-sm" onClick={() => signOut()}>
+                            登出
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        <button className="btn btn-secondary btn-sm" onClick={onLogin}>
+                            登录
+                        </button>
+                        <button className="btn btn-primary btn-sm" onClick={onLogin}>
+                            免费试用
+                        </button>
+                    </>
+                )}
             </div>
         </header>
     )
 }
 
 export default Header
+

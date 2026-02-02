@@ -5,6 +5,38 @@
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:3000/api/v1'
 
+// 获取认证 Token
+function getAuthToken(): string | null {
+    const savedSession = localStorage.getItem('civicmind_session');
+    if (!savedSession) return null;
+
+    try {
+        const session = JSON.parse(savedSession);
+        // 检查是否过期
+        if (session.expires_at && Date.now() / 1000 < session.expires_at) {
+            return session.access_token;
+        }
+    } catch (e) {
+        console.error('Failed to parse session:', e);
+    }
+
+    return null;
+}
+
+// 认证用户类型
+export interface AuthUser {
+    id: string;
+    email: string;
+    created_at?: string;
+}
+
+// 认证会话类型
+export interface AuthSession {
+    access_token: string;
+    refresh_token: string;
+    expires_at: number;
+}
+
 // 通用请求方法
 async function request<T>(
     endpoint: string,
@@ -35,11 +67,13 @@ async function request<T>(
                 signal = controller.signal;
             }
 
+            const authToken = getAuthToken();
             const config: RequestInit = {
                 ...fetchOptions,
                 signal,
                 headers: {
                     ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+                    ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
                     ...(fetchOptions.headers || {}),
                 },
             };
@@ -665,3 +699,37 @@ export interface ParsedExam {
     questions: ParsedQuestion[]
 }
 
+// 认证相关 API
+export const authApi = {
+    // 用户注册
+    register: (email: string, password: string) =>
+        request<{
+            message: string;
+            user: AuthUser | null;
+            session: AuthSession | null;
+        }>('/auth/register', {
+            method: 'POST',
+            body: JSON.stringify({ email, password }),
+        }),
+
+    // 用户登录
+    login: (email: string, password: string) =>
+        request<{
+            message: string;
+            user: AuthUser | null;
+            session: AuthSession | null;
+        }>('/auth/login', {
+            method: 'POST',
+            body: JSON.stringify({ email, password }),
+        }),
+
+    // 用户登出
+    logout: () =>
+        request<{ message: string }>('/auth/logout', {
+            method: 'POST',
+        }),
+
+    // 获取当前用户
+    getCurrentUser: () =>
+        request<{ user: AuthUser }>('/auth/me'),
+}

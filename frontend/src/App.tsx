@@ -15,12 +15,14 @@ import ReportPage from './pages/ReportPage'
 import MaterialsPage from './pages/MaterialsPage'
 import AdminPage from './pages/AdminPage'
 import HistoryPage from './pages/HistoryPage'
+import AuthPage from './pages/AuthPage'
 import { gradingApi } from './services/api'
 import type { Question, UserAnswer, Exam } from './services/api'
 import { UserProvider } from './contexts/UserContext'
+import { AuthProvider } from './contexts/AuthContext'
 import './App.css'
 
-type Page = 'exams' | 'exam-detail' | 'questions' | 'answer' | 'report' | 'materials' | 'admin' | 'history'
+type Page = 'exams' | 'exam-detail' | 'questions' | 'answer' | 'report' | 'materials' | 'admin' | 'history' | 'auth'
 
 function App() {
   const isMobile = useIsMobile()
@@ -185,45 +187,59 @@ function App() {
     return <AdminPage />;
   }
 
+  // 如果是登录页面，渲染登录页面
+  if (currentPage === 'auth') {
+    return (
+      <AuthPage
+        onSuccess={() => setCurrentPage('exams')}
+        onSkip={() => setCurrentPage('exams')}
+      />
+    );
+  }
+
   return (
-    <UserProvider>
-      {isMobile ? (
-        <MobileLayout
-          currentPage={currentPage}
-          onNavigate={(page: string) => {
-            setCurrentPage(page as any)
-            if (page === 'exams') {
-              handleBackToExams()
-            }
-          }}
-        >
-          {renderPage()}
-        </MobileLayout>
-      ) : (
-        <div className="app">
-          <Header />
-          <div className="app-layout">
-            <Sidebar
-              currentPage={currentPage}
-              onNavigate={(page) => {
-                setCurrentPage(page as any)
-                if (page === 'exams') {
-                  handleBackToExams()
-                } else if (page === 'questions') {
-                  setSelectedQuestion(null)
-                  setGradingResult(null)
-                }
-              }}
-              onViewReport={handleViewReport}
-              onManageHistory={handleManageHistory}
+    <AuthProvider>
+      <UserProvider>
+        {isMobile ? (
+          <MobileLayout
+            currentPage={currentPage}
+            onNavigate={(page: string) => {
+              setCurrentPage(page as any)
+              if (page === 'exams') {
+                handleBackToExams()
+              }
+            }}
+          >
+            {renderPage()}
+          </MobileLayout>
+        ) : (
+          <div className="app">
+            <Header
+              onLogin={() => setCurrentPage('auth')}
             />
-            <main className="main-content">
-              {renderPage()}
-            </main>
+            <div className="app-layout">
+              <Sidebar
+                currentPage={currentPage}
+                onNavigate={(page) => {
+                  setCurrentPage(page as any)
+                  if (page === 'exams') {
+                    handleBackToExams()
+                  } else if (page === 'questions') {
+                    setSelectedQuestion(null)
+                    setGradingResult(null)
+                  }
+                }}
+                onViewReport={handleViewReport}
+                onManageHistory={handleManageHistory}
+              />
+              <main className="main-content">
+                {renderPage()}
+              </main>
+            </div>
           </div>
-        </div>
-      )}
-    </UserProvider>
+        )}
+      </UserProvider>
+    </AuthProvider>
   )
 }
 
